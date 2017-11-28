@@ -2,6 +2,7 @@
 // Versio 0.5: Ylävalikko, jossa on ohjeet
 // Versio 0.6: Pelaajat, kortit ja korttipakka olioiksi
 // Versio 0.7: Voi valita pakan
+// Versio 0.8: GitHub
 
 package GUIVentti;
 

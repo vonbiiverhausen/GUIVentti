@@ -2,6 +2,9 @@
 // Versio 0.5: Ylävalikko, jossa on ohjeet
 // Versio 0.6: Pelaajat, kortit ja korttipakka olioiksi
 // Versio 0.7: Voi valita pakan
+// Versio 0.8: Kysytään ässän arvo, poistetaan pakanvalinta turhana
+// Versio 0.9: Uuden pelin aloittaminen
+// Versio 0.10: Venttistatus. Pelaajalla viiden kortin ventti, talo voittaa 20 pisteellä ventistä riippumatta
 
 package GUIVentti;
 
@@ -15,23 +18,27 @@ public class GUIVentti {
     private static Pelaaja pelaaja1 = new Pelaaja("Pelaaja", false), talo = new Pelaaja("Talo", true);
     private static Korttipakka pakka = new Korttipakka();
     
-    private static JFrame ventti = new JFrame("Ventti 0.7"), ohje;
+    private static JFrame ventti = new JFrame("Ventti 0.9"), ohje;
     private static JPanel pnPaa, pnPelaajat, pnPelaaja, pnTalo, pnNapit;
     private static JButton btOtaKortti, btPelaaKasi;
     private static JLabel lbPelaaja, lbTalo, lbPPisteet, lbTPisteet, lbPKasi, lbTKasi;
     private static JEditorPane epPelaaja, epTalo;
     private static JMenuBar menu;
-    private static JMenu mPeli, mHelp, mSaannot;
+    private static JMenu mPeli, mHelp;
     private static JMenuItem mOhje, mAloitaPeli, mLopetaPeli;
-    private static JRadioButtonMenuItem mAssaOnYksi, mAssaOn14;
-    private static boolean assaOnYksi = true;
     
     static class AloitaPeli implements ActionListener {
         public void actionPerformed(ActionEvent tapahtuma) {
-            mSaannot.setEnabled(false);
-            pakka.luoKortit(assaOnYksi);
+            pakka.nollaa();
+            pakka.luoKortit();
+            pelaaja1.nollaa();
+            talo.nollaa();
             btOtaKortti.setEnabled(true);
             btPelaaKasi.setEnabled(true);
+            lbPPisteet.setText("Pisteet: ");
+            lbTPisteet.setText("Pisteet: ");
+            lbPKasi.setText("Käsi: ");
+            lbTKasi.setText("Käsi: ");
             pelaa(pelaaja1);
         }
     }
@@ -40,23 +47,7 @@ public class GUIVentti {
         public void actionPerformed(ActionEvent tapahtuma) {
             System.exit(0);
         }
-    }
-    
-    static class AssaOnYksi implements ActionListener {
-        public void actionPerformed(ActionEvent tapahtuma) {
-            assaOnYksi = true;
-            mAssaOnYksi.setSelected(true);
-            mAssaOn14.setSelected(false);
-        }
-    }
-    
-    static class AssaOn14 implements ActionListener {
-        public void actionPerformed(ActionEvent tapahtuma) {
-            assaOnYksi = false;
-            mAssaOnYksi.setSelected(false);
-            mAssaOn14.setSelected(true);
-        }
-    }
+    }    
     
     static class OtaKortti implements ActionListener {
         public void actionPerformed(ActionEvent tapahtuma) {
@@ -124,27 +115,16 @@ public class GUIVentti {
         mLopetaPeli = new JMenuItem("Lopeta");
         mLopetaPeli.addActionListener(new Lopeta());
         
-        mSaannot = new JMenu("Pakka");
-        mAssaOnYksi = new JRadioButtonMenuItem("Ässän arvo on 1");
-        mAssaOnYksi.setSelected(true);
-        mAssaOnYksi.addActionListener(new AssaOnYksi());
-        mAssaOn14 = new JRadioButtonMenuItem("Ässän arvo on 14");
-        mAssaOn14.setSelected(false);
-        mAssaOn14.addActionListener(new AssaOn14());
-        
         mHelp = new JMenu("Info");
         mOhje = new JMenuItem("Ohje");
         mOhje.addActionListener(new Ohje());
         
         mPeli.add(mAloitaPeli);
         mPeli.add(mLopetaPeli);
-        mSaannot.add(mAssaOnYksi);
-        mSaannot.add(mAssaOn14);
         mHelp.add(mOhje);
         
         
         menu.add(mPeli);
-        menu.add(mSaannot);
         menu.add(mHelp);
         ventti.setJMenuBar(menu);
     }
@@ -174,7 +154,9 @@ public class GUIVentti {
         btPelaaKasi = new JButton("Pelaa käsi");
         
         pnNapit.add(btOtaKortti);
+        btOtaKortti.addActionListener(new OtaKortti());
         pnNapit.add(btPelaaKasi);
+        btPelaaKasi.addActionListener(new pelaaKasi());
         btPelaaKasi.setEnabled(false);
         btOtaKortti.setEnabled(false);
     }
@@ -208,11 +190,7 @@ public class GUIVentti {
     }
     
     private static void pelaa(Pelaaja pelaaja) {
-        if (!pelaaja.onkoTalo()) {
-            btOtaKortti.addActionListener(new OtaKortti());
-            btPelaaKasi.addActionListener(new pelaaKasi());
-        }
-        if (pelaaja.onkoTalo()) {
+        if (pelaaja.onTalo()) {
             while (true) {
                 if (pelaaja.getPisteet() < 13 || pelaaja.getPisteet() < pelaaja1.getPisteet()) {
                     otaKortti(pelaaja);
@@ -232,19 +210,44 @@ public class GUIVentti {
     private static void otaKortti(Pelaaja player) {
 
         player.otaKortti(pakka);
-
-        if (!player.onkoTalo()) {
+        
+        if (!player.onTalo()) {
             lbPPisteet.setText("Pisteet: " + player.getPisteet());
             lbPKasi.setText("Käsi: " + player.tulostaKasi());
         }
         
-        if (player.onkoTalo()) {
+        if (player.onTalo()) {
             lbTPisteet.setText("Pisteet: " + player.getPisteet());
             lbTKasi.setText("Käsi: " + player.tulostaKasi());
         }
         
+        // yli 21 pistettä -> häviö
         if (player.getPisteet() > 21) {
             havia(player);
+        }
+        
+        // Tasan 21 pistettä -> ventti
+        if (player.getPisteet() == 21) {
+            System.out.println("Ventti!");
+            getVentti(player);
+        }
+        
+        // Jos pelaajalla on 5 korttia, joiden arvo on alle 21 -> ventti
+        if (!player.onTalo() && player.kadenKoko() >= 5 && player.getPisteet() < 21) {
+            System.out.println("Ventti!");
+            getVentti(player);
+        }
+        
+    }
+    
+    private static void getVentti(Pelaaja pelaaja) {
+        pelaaja.setVentti();
+        if (!pelaaja.onTalo()) {
+            // vuoro siirtyy talolle
+            pelaa(talo);
+        } else {
+            // pelaaja on talo -> mennään vertaukseen
+            vertaa();
         }
     }
     
@@ -255,15 +258,46 @@ public class GUIVentti {
     }
     
     private static void vertaa() {
-        // katsotaan kumpi on lähempänä 21 pistettä
+        
         String viesti = "";
-        viesti += "Pelaaja sai "+pelaaja1.getPisteet()+" pistettä\n";
-        viesti+= "Talo sai "+talo.getPisteet()+" pistettä\n\n";
-        if (21-pelaaja1.getPisteet() < 21-talo.getPisteet()) {
-            viesti += pelaaja1.getNimi()+" voitti!";
+        
+        // Generoidaan tilannetiedot ventistä ja pisteistä
+        if (pelaaja1.Ventti()) {
+            viesti += "Pelaaja sai ventin\n";
         } else {
+            viesti += "Pelaaja sai "+pelaaja1.getPisteet()+" pistettä\n";
+        }
+        if (talo.Ventti()) {
+            viesti += "Talo sai ventin\n";
+        } else {
+            viesti+= "Talo sai "+talo.getPisteet()+" pistettä\n\n";
+        }
+        
+        // jos talolla ja pelaajalla ventit, talo voittaa
+        if (talo.Ventti() && pelaaja1.Ventti()) {
             viesti += talo.getNimi()+" voitti!";
         }
+        
+        // jos pelaajalla ventti ja talolla ei, pelaaja voittaa
+        // Mutta jos talolla on 20 pistettä, niin talo voittaa pelaajan ventistä huolimatta
+        if (pelaaja1.Ventti() && !talo.Ventti()) {
+            if (talo.getPisteet() == 20) {
+                viesti += talo.getNimi()+" voitti!";
+            } else {
+                viesti += pelaaja1.getNimi()+" voitti!";
+            }
+        }
+        
+        // jos kummallakaan ei ole venttiä, niin verrataan pisteitä
+        // Lähimpänä 21 pistettä olija voittaa
+        if (!pelaaja1.Ventti() && !talo.Ventti()) {
+            if (21 - pelaaja1.getPisteet() < 21 - talo.getPisteet()) {
+                viesti += pelaaja1.getNimi() + " voitti!";
+            } else {
+                viesti += talo.getNimi() + " voitti!";
+            }
+        }
+        
         JOptionPane.showMessageDialog(null, viesti);
     }
     

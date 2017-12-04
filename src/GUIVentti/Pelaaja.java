@@ -7,13 +7,13 @@ public class Pelaaja {
     private Korttipakka pelaajanKasi;
     private String pelaajanNimi;
     private int pelaajanPisteet;
-    private boolean onkoTalo, onVentti;
+    private boolean onTalo, onVentti;
     
     public Pelaaja(String nimi, boolean onkoTalo) {
         this.pelaajanKasi = new Korttipakka();
         this.pelaajanNimi=nimi;
         this.pelaajanPisteet = 0;
-        this.onkoTalo = onkoTalo;
+        this.onTalo = onkoTalo;
         this.onVentti = false;
     }
     
@@ -36,7 +36,7 @@ public class Pelaaja {
         this.pelaajanKasi.addKortti(pakka.getKortti(korttiIndeksi));
         if (pakka.getKortti(korttiIndeksi).getMaa().contains("ässä")) {
             // jos ässä, kysy onko ässä arvoltaan 1 vai 14
-            if (!this.onkoTalo) {
+            if (!this.onTalo) {
                 this.pelaajanPisteet += assaKysely();   // pelaaja päättää ässän arvon
             } else {
                 this.pelaajanPisteet++;                 // talolle ässä on 1
@@ -71,7 +71,7 @@ public class Pelaaja {
     }
     
     public boolean onTalo() {
-        return this.onkoTalo;
+        return this.onTalo;
     }
     
     public void nollaa() {
@@ -84,7 +84,7 @@ public class Pelaaja {
         return this.pelaajanKasi.getSize();
     }
     
-    public void setVentti() {
+    public void saaVentin() {
         this.onVentti=true;
     }
     

@@ -18,7 +18,7 @@ public class GUIVentti {
     private static Pelaaja pelaaja1 = new Pelaaja("Pelaaja", false), talo = new Pelaaja("Talo", true);
     private static Korttipakka pakka = new Korttipakka();
     
-    private static JFrame ventti = new JFrame("Ventti 0.9"), ohje;
+    private static JFrame ventti = new JFrame("Ventti 0.10"), ohje;
     private static JPanel pnPaa, pnPelaajat, pnPelaaja, pnTalo, pnNapit;
     private static JButton btOtaKortti, btPelaaKasi;
     private static JLabel lbPelaaja, lbTalo, lbPPisteet, lbTPisteet, lbPKasi, lbTKasi;
@@ -28,6 +28,7 @@ public class GUIVentti {
     private static JMenuItem mOhje, mAloitaPeli, mLopetaPeli;
     
     static class AloitaPeli implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent tapahtuma) {
             pakka.nollaa();
             pakka.luoKortit();
@@ -44,12 +45,14 @@ public class GUIVentti {
     }
     
     static class Lopeta implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent tapahtuma) {
             System.exit(0);
         }
     }    
     
     static class OtaKortti implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent tapahtuma) {
             otaKortti(pelaaja1);
         }
@@ -64,6 +67,7 @@ public class GUIVentti {
     }
     
     static class Ohje implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent tapahtuma) {
             luoOhjeIkkuna();
         }
@@ -191,13 +195,10 @@ public class GUIVentti {
     
     private static void pelaa(Pelaaja pelaaja) {
         if (pelaaja.onTalo()) {
-            while (true) {
+            while (!talo.Ventti()) { // talo havittelee venttiä
                 if (pelaaja.getPisteet() < 13 || pelaaja.getPisteet() < pelaaja1.getPisteet()) {
                     otaKortti(pelaaja);
                 } else if (pelaaja.getPisteet() >= 13 && pelaaja.getPisteet() < 21) {
-                    vertaa();
-                    break;
-                } else if (pelaaja.getPisteet() == 21) {
                     vertaa();
                     break;
                 } else if (pelaaja.getPisteet() > 21) {
@@ -229,24 +230,26 @@ public class GUIVentti {
         // Tasan 21 pistettä -> ventti
         if (player.getPisteet() == 21) {
             System.out.println("Ventti!");
-            getVentti(player);
+            annaVentti(player);
         }
         
         // Jos pelaajalla on 5 korttia, joiden arvo on alle 21 -> ventti
         if (!player.onTalo() && player.kadenKoko() >= 5 && player.getPisteet() < 21) {
             System.out.println("Ventti!");
-            getVentti(player);
+            annaVentti(player);
         }
         
     }
     
-    private static void getVentti(Pelaaja pelaaja) {
-        pelaaja.setVentti();
+    private static void annaVentti(Pelaaja pelaaja) {
+        pelaaja.saaVentin();
         if (!pelaaja.onTalo()) {
             // vuoro siirtyy talolle
+            lbPPisteet.setText("Pisteet: " + pelaaja.getPisteet()+" VENTTI");
             pelaa(talo);
         } else {
             // pelaaja on talo -> mennään vertaukseen
+            lbTPisteet.setText("Pisteet: " + pelaaja.getPisteet()+" VENTTI");
             vertaa();
         }
     }
@@ -274,7 +277,8 @@ public class GUIVentti {
         }
         
         // jos talolla ja pelaajalla ventit, talo voittaa
-        if (talo.Ventti() && pelaaja1.Ventti()) {
+        // jos talolla on ventti, mutta pelaajalla ei, talo voittaa
+        if (talo.Ventti()) {
             viesti += talo.getNimi()+" voitti!";
         }
         

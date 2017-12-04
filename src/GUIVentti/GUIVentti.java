@@ -4,7 +4,7 @@
 // Versio 0.7: Voi valita pakan
 // Versio 0.8: Kysytään ässän arvo, poistetaan pakanvalinta turhana
 // Versio 0.9: Uuden pelin aloittaminen
-// Versio 0.10: Pelaajalla viiden kortin ventti, talolla voittaa 20 pisteessä
+// Versio 0.10: Venttistatus. Pelaajalla viiden kortin ventti, talo voittaa 20 pisteellä ventistä riippumatta
 
 package GUIVentti;
 
@@ -190,8 +190,6 @@ public class GUIVentti {
     }
     
     private static void pelaa(Pelaaja pelaaja) {
-        if (!pelaaja.onTalo()) {
-        }
         if (pelaaja.onTalo()) {
             while (true) {
                 if (pelaaja.getPisteet() < 13 || pelaaja.getPisteet() < pelaaja1.getPisteet()) {
@@ -212,7 +210,7 @@ public class GUIVentti {
     private static void otaKortti(Pelaaja player) {
 
         player.otaKortti(pakka);
-
+        
         if (!player.onTalo()) {
             lbPPisteet.setText("Pisteet: " + player.getPisteet());
             lbPKasi.setText("Käsi: " + player.tulostaKasi());
@@ -223,14 +221,18 @@ public class GUIVentti {
             lbTKasi.setText("Käsi: " + player.tulostaKasi());
         }
         
+        // yli 21 pistettä -> häviö
         if (player.getPisteet() > 21) {
             havia(player);
         }
+        
+        // Tasan 21 pistettä -> ventti
         if (player.getPisteet() == 21) {
             System.out.println("Ventti!");
             getVentti(player);
         }
         
+        // Jos pelaajalla on 5 korttia, joiden arvo on alle 21 -> ventti
         if (!player.onTalo() && player.kadenKoko() >= 5 && player.getPisteet() < 21) {
             System.out.println("Ventti!");
             getVentti(player);
@@ -256,8 +258,10 @@ public class GUIVentti {
     }
     
     private static void vertaa() {
-        // katsotaan kumpi on lähempänä 21 pistettä
+        
         String viesti = "";
+        
+        // Generoidaan tilannetiedot ventistä ja pisteistä
         if (pelaaja1.Ventti()) {
             viesti += "Pelaaja sai ventin\n";
         } else {
@@ -269,9 +273,13 @@ public class GUIVentti {
             viesti+= "Talo sai "+talo.getPisteet()+" pistettä\n\n";
         }
         
+        // jos talolla ja pelaajalla ventit, talo voittaa
         if (talo.Ventti() && pelaaja1.Ventti()) {
             viesti += talo.getNimi()+" voitti!";
         }
+        
+        // jos pelaajalla ventti ja talolla ei, pelaaja voittaa
+        // Mutta jos talolla on 20 pistettä, niin talo voittaa pelaajan ventistä huolimatta
         if (pelaaja1.Ventti() && !talo.Ventti()) {
             if (talo.getPisteet() == 20) {
                 viesti += talo.getNimi()+" voitti!";
@@ -281,6 +289,7 @@ public class GUIVentti {
         }
         
         // jos kummallakaan ei ole venttiä, niin verrataan pisteitä
+        // Lähimpänä 21 pistettä olija voittaa
         if (!pelaaja1.Ventti() && !talo.Ventti()) {
             if (21 - pelaaja1.getPisteet() < 21 - talo.getPisteet()) {
                 viesti += pelaaja1.getNimi() + " voitti!";

@@ -8,13 +8,8 @@ public class Korttipakka {
         this.korttipakka = new ArrayList<>();
     }
     
-    public void luoKortit(boolean assanArvoYksi) {
-        int alkuArvo;
-        if (assanArvoYksi) {
-            alkuArvo=1;
-        } else {
-            alkuArvo=2;
-        }
+    public void luoKortit() {
+        int alkuArvo = 2;
         
         // Luodaan hertat
         for (int i = alkuArvo; i <= alkuArvo+12; i++) {
@@ -53,7 +48,7 @@ public class Korttipakka {
         this.korttipakka.remove(indeksi);
     }
     
-    public void nollaa(boolean assanArvoYksi) {
+    public void nollaa() {
         this.korttipakka.clear();
     }
 }

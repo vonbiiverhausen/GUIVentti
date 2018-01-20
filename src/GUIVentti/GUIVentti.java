@@ -5,6 +5,7 @@
 // Versio 0.8: Kysytään ässän arvo, poistetaan pakanvalinta turhana
 // Versio 0.9: Uuden pelin aloittaminen
 // Versio 0.10: Venttistatus. Pelaajalla viiden kortin ventti, talo voittaa 20 pisteellä ventistä riippumatta
+// Versio 0.11: StringBuilder
 
 package GUIVentti;
 
@@ -18,6 +19,8 @@ public class GUIVentti {
     private static Pelaaja pelaaja1 = new Pelaaja("Pelaaja", false), talo = new Pelaaja("Talo", true);
     private static Korttipakka pakka = new Korttipakka();
     
+    private static StringBuilder sb = new StringBuilder();
+    
     private static JFrame ventti = new JFrame("Ventti 0.10"), ohje;
     private static JPanel pnPaa, pnPelaajat, pnPelaaja, pnTalo, pnNapit;
     private static JButton btOtaKortti, btPelaaKasi;
@@ -27,6 +30,7 @@ public class GUIVentti {
     private static JMenu mPeli, mHelp;
     private static JMenuItem mOhje, mAloitaPeli, mLopetaPeli;
     
+    // MenuItem 'Aloita peli'
     static class AloitaPeli implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent tapahtuma) {
@@ -44,6 +48,7 @@ public class GUIVentti {
         }
     }
     
+    // MenuItem 'lopeta'
     static class Lopeta implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent tapahtuma) {
@@ -51,6 +56,7 @@ public class GUIVentti {
         }
     }    
     
+    // Nappi 'Ota kortti'
     static class OtaKortti implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent tapahtuma) {
@@ -58,6 +64,7 @@ public class GUIVentti {
         }
     }
     
+    // Nappi 'Pelaa käsi'
     static class pelaaKasi implements ActionListener {
         public void actionPerformed(ActionEvent tapahtuma) {
             btOtaKortti.setEnabled(false);
@@ -66,6 +73,7 @@ public class GUIVentti {
         }
     }
     
+    // MenuItem 'Ohje'
     static class Ohje implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent tapahtuma) {
@@ -84,15 +92,15 @@ public class GUIVentti {
         ohje.add(ohjePaneeli);
         ohjePaneeli.add(ohjeTeksti);
         
-        String ohjeString = "Ventti\n\nPelaaja pelaa ensin. Paina \"Ota kortti\" -nappia ottaaksesi uuden kortin.\n";
-        ohjeString += "Paina \"Pelaa kasi\"-nappia pelataksesi kätesi. Talo pelaa tällöin vuoronsa.\n\n";
-        ohjeString += "Säännöt:\n";
-        ohjeString += "Pelaajat päättävät ottavatko kortteja vai pelaavatko kätensä\n";
-        ohjeString += "Pelin tarkoituksena on kerätä kortteja, kunnes niiden yhteisarvo on 21 tai alle\n";
-        ohjeString += "Jos yhteisarvo ylittää 21, niin pelaaja häviää\n";
-        ohjeString += "Jos pelaaja pelaa kätensä, vuoro siirtyy toiselle pelaajalle ja tämä pelaa vuoronsa. \n";
-        ohjeString += "Kun kaikki pelaajat ovat pelanneet kätensä, katsotaan kumpi pelaaja on lähempänä\n";
-        ohjeString += "21 pistettä. Tasapelitilanteessa talo voittaa";
+        String ohjeString = "Ventti\n\nPelaaja pelaa ensin. Paina \"Ota kortti\" -nappia ottaaksesi uuden kortin.\n"
+                + "Paina \"Pelaa kasi\"-nappia pelataksesi kätesi. Talo pelaa tällöin vuoronsa.\n\n"
+                + "Säännöt:\n"
+                + "Pelaajat päättävät ottavatko kortteja vai pelaavatko kätensä\n"
+                + "Pelin tarkoituksena on kerätä kortteja, kunnes niiden yhteisarvo on 21 tai alle\n"
+                + "Jos yhteisarvo ylittää 21, niin pelaaja häviää\n"
+                + "Jos pelaaja pelaa kätensä, vuoro siirtyy toiselle pelaajalle ja tämä pelaa vuoronsa. \n"
+                + "Kun kaikki pelaajat ovat pelanneet kätensä, katsotaan kumpi pelaaja on lähempänä\n"
+                + "21 pistettä. Tasapelitilanteessa talo voittaa";
         
         ohjeTeksti.setText(ohjeString);
         ohje.setVisible(true);
@@ -229,13 +237,13 @@ public class GUIVentti {
         
         // Tasan 21 pistettä -> ventti
         if (player.getPisteet() == 21) {
-            System.out.println("Ventti!");
+            //System.out.println("Ventti!");
             annaVentti(player);
         }
         
         // Jos pelaajalla on 5 korttia, joiden arvo on alle 21 -> ventti
         if (!player.onTalo() && player.kadenKoko() >= 5 && player.getPisteet() < 21) {
-            System.out.println("Ventti!");
+            //System.out.println("Ventti!");
             annaVentti(player);
         }
         
@@ -266,29 +274,29 @@ public class GUIVentti {
         
         // Generoidaan tilannetiedot ventistä ja pisteistä
         if (pelaaja1.Ventti()) {
-            viesti += "Pelaaja sai ventin\n";
+            viesti = sb.append("Pelaaja sai ventin\n").toString();
         } else {
-            viesti += "Pelaaja sai "+pelaaja1.getPisteet()+" pistettä\n";
+            viesti = sb.append("Pelaaja sai "+pelaaja1.getPisteet()+" pistettä\n").toString();
         }
         if (talo.Ventti()) {
-            viesti += "Talo sai ventin\n";
+            viesti = sb.append("Talo sai ventin\n").toString();
         } else {
-            viesti+= "Talo sai "+talo.getPisteet()+" pistettä\n\n";
+            viesti = sb.append("Talo sai "+talo.getPisteet()+" pistettä\n\n").toString();
         }
         
         // jos talolla ja pelaajalla ventit, talo voittaa
         // jos talolla on ventti, mutta pelaajalla ei, talo voittaa
         if (talo.Ventti()) {
-            viesti += talo.getNimi()+" voitti!";
+            viesti = sb.append(talo.getNimi()+" voitti!").toString();
         }
         
         // jos pelaajalla ventti ja talolla ei, pelaaja voittaa
         // Mutta jos talolla on 20 pistettä, niin talo voittaa pelaajan ventistä huolimatta
         if (pelaaja1.Ventti() && !talo.Ventti()) {
             if (talo.getPisteet() == 20) {
-                viesti += talo.getNimi()+" voitti!";
+                viesti = sb.append(talo.getNimi()+" voitti!").toString();
             } else {
-                viesti += pelaaja1.getNimi()+" voitti!";
+                viesti = sb.append(pelaaja1.getNimi()+" voitti!").toString();
             }
         }
         
@@ -296,9 +304,9 @@ public class GUIVentti {
         // Lähimpänä 21 pistettä olija voittaa
         if (!pelaaja1.Ventti() && !talo.Ventti()) {
             if (21 - pelaaja1.getPisteet() < 21 - talo.getPisteet()) {
-                viesti += pelaaja1.getNimi() + " voitti!";
+                viesti = sb.append(pelaaja1.getNimi() + " voitti!").toString();
             } else {
-                viesti += talo.getNimi() + " voitti!";
+                viesti = sb.append(talo.getNimi() + " voitti!").toString();
             }
         }
         
